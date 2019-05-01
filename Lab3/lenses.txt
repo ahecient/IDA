@@ -1,0 +1,7 @@
+specimens	age	prerequisite	astigmatism	contactlenses
+1	teens	myopia	is	no
+2	teens	farsightedness	is	tight
+3	adults	myopia	is	no
+4	adults	myopia	is	tight
+5	old	farsightedness	isnt	soft
+6	old	farsightedness	is	no

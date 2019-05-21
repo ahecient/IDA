@@ -40,10 +40,21 @@ wholemilk_rules <- apriori(data=Groceries, parameter=list (supp=0.001,conf = 0.0
 
 grocery_rules_increased_support <- apriori(Groceries, parameter = list(support = 0.02, confidence = 0.5))
 
-subsets <- which(colSums(is.subset(rules, rules)) > 1)
-rules <- rules[-subsets]
 
-# rules <- apriori(Groceries, parameter = list(supp = 0.0001, conf = 0.5))
-# 
-# rules_chi2 <- apriori(Groceries, parameter = list(supp = 0.0001, conf = 0.5, arem = "chi2"))
-# #rules <- apriori(AdultUCI, parameter=list(support=0.01, confidence=0.5))
+
+#--------------------
+
+data <-  read.csv("Market_Basket_Optimisation.csv", header = FALSE)
+head(data)
+
+data <- read.transactions("Market_Basket_Optimisation.csv", sep =',', rm.duplicates = TRUE )
+
+summary(data)
+
+itemFrequencyPlot(data, topN=10)
+
+##Training apriori
+
+rules <-  apriori(data = data, parameter = list(support = 0.003 , confidence = 0.2) )
+
+inspect(sort(rules, by = 'lift')[1:20])

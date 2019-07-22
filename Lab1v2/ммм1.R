@@ -23,6 +23,8 @@ clean_text <- function(sen){
   return(words)
 }
 
+start.time <- Sys.time()
+
 energy_words <- clean_text(energy)
 movies_words <- clean_text(movies)
 realestatet_words <- clean_text(realestatet)
@@ -104,9 +106,9 @@ for(i in 1:length(test_words))
   }
 }
 
-test_news$probability_energy <-1                            
-test_news$probability_realestate<-1
-test_news$probability_movies <-1
+test_news$probability_energy <-0                            
+test_news$probability_realestate<-0
+test_news$probability_movies <-0
 #FIX this SHIT
 for (i in 1:(nrow(test_news))){
   print(test_news$text[i])
@@ -115,20 +117,20 @@ for (i in 1:(nrow(test_news))){
   for(k in 1:length(test)){
     for (l in 1:nrow(main_table)) {
         if(test[k]==main_table$word[l]){
-          test_news$probability_energy[i] <- test_news$probability_energy[i] * main_table$P.energy[l]
+          test_news$probability_energy[i] <- test_news$probability_energy[i] + log(main_table$P.energy[l])
           
-          test_news$probability_realestate[i] <- test_news$probability_realestate[i] * main_table$p.realestate[l]     
+          test_news$probability_realestate[i] <- test_news$probability_realestate[i] + log(main_table$p.realestate[l])    
           
-          test_news$probability_movies[i] <- test_news$probability_movies[i] * main_table$p.movies[l]
+          test_news$probability_movies[i] <- test_news$probability_movies[i] + log(main_table$p.movies[l])
         }
       }
     }
 }
 
 for(i in 1:(nrow(test_news))){    
-  test_news$probability_energy[i] <- (length(energy)/(length(energy)+length(realestatet)+length(movies)))*test_news$probability_energy[i]
-  test_news$probability_realestate[i] <- (length(realestatet)/(length(energy)+length(realestatet)+length(movies)))*test_news$probability_realestate[i]
-  test_news$probability_movies[i] <- (length(movies)/(length(energy)+length(realestatet)+length(movies)))*test_news$probability_movies[i]
+  test_news$probability_energy[i] <- log(length(energy)/(length(energy)+length(realestatet)+length(movies)))+test_news$probability_energy[i]
+  test_news$probability_realestate[i] <- log(length(realestatet)/(length(energy)+length(realestatet)+length(movies)))+test_news$probability_realestate[i]
+  test_news$probability_movies[i] <- log(length(movies)/(length(energy)+length(realestatet)+length(movies)))+test_news$probability_movies[i]
 }
 
 test_news$max <- NA;
@@ -145,6 +147,8 @@ for (i in 1:(nrow(test_news))){
   }
 }
 
+end.time <- Sys.time()
+
 test_news$prediction <- NA;
 
 for(i in 1:(nrow(test_news))){   
@@ -159,3 +163,5 @@ y <- nrow(test_news)
 
 G <- (x/y)*100
 
+time.taken <- end.time - start.time
+print(c("Time: ", time.taken, "second"))

@@ -2,46 +2,36 @@ library("tm")
 library("stringr")  
 library("stringi")
 
-p.word.class <- function(N_ik,M,N_k,a)                       
-{                                                             
+
+energy <- scan(file="energy_800.txt", what=character(),sep="\n")                        
+realestatet <- scan(file ="realestate_800.txt", what=character(),sep="\n")
+movies <- scan(file ="movies_800.txt",what=character(),sep="\n")
+
+test_news <- read.table("test_800.txt", header=TRUE,
+                        sep="\t", quote = "", stringsAsFactors = FALSE)                        
+
+p.word.class <- function(N_ik,M,N_k,a){                                                             
   (a+N_ik)/(a*M+N_k)
 }
 
- 
-energy <- scan(file="energy.txt", what=character(),sep="\n")                        
-realestatet <- scan(file ="realestate.txt", what=character(),sep="\n")
-movies <- scan(file ="movies.txt",what=character(),sep="\n")
+clean_text <- function(sen){
+  sen <- str_replace_all(sen, "[:punct:]|[:digit:]", "")
+  sen <- tolower(sen)
+  words <- unlist(strsplit(sen, " "))
+  words  <- words[! words %in% stopwords("english")]
+  words <- stri_remove_empty(words)
+  return(words)
+}
 
-test_news <- read.table("test.txt", header=TRUE,
-                        sep="\t", quote = "")                        
+energy_words <- clean_text(energy)
+movies_words <- clean_text(movies)
+realestatet_words <- clean_text(realestatet)
+test_words <- clean_text(test_news$text)
 
-
-test_news$test <- str_replace_all(test_news$text, "[:punct:]|[:digit:]", "")        
-test_news$test <- tolower(test_news$test)                                   
-test_words <- unlist(strsplit(test_news$test, " "))                            
-test_words  <- test_words[! test_words %in% stopwords("english")]            
 
 test_words <- unique(test_words)
 test_words <- stri_remove_empty(test_words)
 
-
-energy <- str_replace_all(energy, "[[:punct:]]", "")
-energy <- str_replace_all(energy, "[[:digit:]]", "")
-energy <- tolower(energy)
-energy_words <- unlist(strsplit(energy, " "))
-energy_words  <- energy_words[! energy_words %in% stopwords("english")]
-  
-realestatet <- str_replace_all(realestatet, "[[:punct:]]", "")
-realestatet <- str_replace_all(realestatet, "[[:digit:]]", "")
-realestatet <- tolower(realestatet)
-realestatet_words <- unlist(strsplit(realestatet, " "))
-realestatet_words  <- realestatet_words[! realestatet_words %in% stopwords("english")]
-
-movies <- str_replace_all(movies, "[[:punct:]]", "")
-movies <- str_replace_all(movies, "[[:digit:]]", "")
-movies <- tolower(movies)
-movies_words <- unlist(strsplit(movies, " "))
-movies_words  <- movies_words[! movies_words %in% stopwords("english")]
 
 unique_words <- table(energy_words)                                                
 main_table <- data.frame(u_words=unique_words)                                      
@@ -54,9 +44,7 @@ main_table$movies <- 0
 for(i in 1:length(realestatet_words)){                                              
   need_word <- TRUE
   for(j in 1:(nrow(main_table))){
-    
-    if(realestatet_words[i]==main_table[j,1])                       
-    {
+    if(realestatet_words[i]==main_table[j,1]){
       main_table$realestatet[j] <- main_table$realestatet[j]+1
       need_word <- FALSE
     }
@@ -119,16 +107,14 @@ for(i in 1:length(test_words))
 test_news$probability_energy <-1                            
 test_news$probability_realestate<-1
 test_news$probability_movies <-1
-#FIX IT SHIT
+#FIX this SHIT
 for (i in 1:(nrow(test_news))){
-  print(test_news$test[i])
-  test <- unlist(strsplit(test_news$test[i]," "))
+  print(test_news$text[i])
+  test <- clean_text(test_news$text[i])
   print(test)
   for(k in 1:length(test)){
-  for(j in 1:length(test_words)){
-    if(test[k] == test_words[j]){
-      for (l in 1:nrow(main_table)) {
-        if(test_words[j]==main_table$word[l]){
+    for (l in 1:nrow(main_table)) {
+        if(test[k]==main_table$word[l]){
           test_news$probability_energy[i] <- test_news$probability_energy[i] * main_table$P.energy[l]
           
           test_news$probability_realestate[i] <- test_news$probability_realestate[i] * main_table$p.realestate[l]     
@@ -137,10 +123,6 @@ for (i in 1:(nrow(test_news))){
         }
       }
     }
-  } 
-  }
-
-
 }
 
 for(i in 1:(nrow(test_news))){    
